@@ -117,7 +117,8 @@ def actions_for_app(actions):
         app_id = action.get("appId")
         if app_id is None:
             filtered.append(action)
-        if app_id == current_app:
+            continue
+        if current_app is not None and app_id == current_app:
             filtered.append(action)
             found_match = True
         if app_id == "!" and not found_match:
