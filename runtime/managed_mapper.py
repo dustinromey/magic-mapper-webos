@@ -105,15 +105,20 @@ def actions_for_app(actions):
         return actions
     if type(actions) is not list:
         actions = [actions]
-    response = upstream.luna_send("luna://com.webos.applicationManager/getForegroundAppInfo", {})
-    current_app = json.loads(response).get("appId")
+    try:
+        response = upstream.luna_send("luna://com.webos.applicationManager/getForegroundAppInfo", {})
+        current_app = json.loads(response).get("appId")
+    except (ValueError, OSError, TypeError) as exc:
+        print(f"WARNING: Foreground app lookup failed: {exc}", flush=True)
+        current_app = None
     filtered = []
     found_match = False
     for action in actions:
         app_id = action.get("appId")
         if app_id is None:
             filtered.append(action)
-        if app_id == current_app:
+            continue
+        if current_app is not None and app_id == current_app:
             filtered.append(action)
             found_match = True
         if app_id == "!" and not found_match:

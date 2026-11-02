@@ -189,7 +189,9 @@ export default function App(): JSX.Element {
   let returnFocus: HTMLElement | null = null;
   let toastTimer: number | undefined;
 
-  const entries = () => Object.keys(status().config ?? {}).toSorted();
+  // Object.keys() already returns a new array; toSorted() is unavailable on older webOS Chromium.
+  // oxlint-disable-next-line unicorn/no-array-sort
+  const entries = () => Object.keys(status().config ?? {}).sort();
 
   function setBusy(value: boolean): void {
     setBusySignal(value);
@@ -266,7 +268,7 @@ export default function App(): JSX.Element {
     const current = modalView();
     if (!current || (!force && !current.closable)) return;
     const stack = modalStack();
-    const previous = stack.at(-1);
+    const previous = stack[stack.length - 1];
     if (!previous) {
       closeModal();
       return;
