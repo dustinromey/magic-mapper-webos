@@ -412,5 +412,25 @@ class InputDeviceReadTests(unittest.TestCase):
         )
 
 
+
+class ForegroundAppLookupTests(unittest.TestCase):
+    """A transient Luna failure must not terminate remote-input handling."""
+
+    def setUp(self):
+        self.unconditional = {"function": "launch_app", "inputs": {"app_id": "io.freemytv"}}
+        self.app_specific = {"appId": "com.example.other", "function": "press_button", "inputs": {"button": "home"}}
+
+    def test_empty_luna_response_preserves_unconditional_mapping(self):
+        with mock.patch.object(managed_mapper.upstream, "luna_send", return_value=""):
+            self.assertEqual(managed_mapper.actions_for_app([self.unconditional, self.app_specific]), [self.unconditional])
+
+    def test_luna_oserror_preserves_unconditional_mapping(self):
+        with mock.patch.object(managed_mapper.upstream, "luna_send", side_effect=OSError("temporary failure")):
+            self.assertEqual(managed_mapper.actions_for_app([self.unconditional, self.app_specific]), [self.unconditional])
+
+    def test_valid_luna_response_preserves_app_specific_mapping(self):
+        with mock.patch.object(managed_mapper.upstream, "luna_send", return_value='{"appId": "com.example.other"}'):
+            self.assertEqual(managed_mapper.actions_for_app([self.unconditional, self.app_specific]), [self.unconditional, self.app_specific])
+
 if __name__ == "__main__":
     unittest.main()
