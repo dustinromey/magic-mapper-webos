@@ -428,6 +428,10 @@ class ForegroundAppLookupTests(unittest.TestCase):
         with mock.patch.object(managed_mapper.upstream, "luna_send", side_effect=OSError("temporary failure")):
             self.assertEqual(managed_mapper.actions_for_app([self.unconditional, self.app_specific]), [self.unconditional])
 
+    def test_missing_app_id_does_not_duplicate_unconditional_action(self):
+        with mock.patch.object(managed_mapper.upstream, "luna_send", return_value='{"returnValue": true}'):
+            self.assertEqual(managed_mapper.actions_for_app([self.unconditional]), [self.unconditional])
+
     def test_valid_luna_response_preserves_app_specific_mapping(self):
         with mock.patch.object(managed_mapper.upstream, "luna_send", return_value='{"appId": "com.example.other"}'):
             self.assertEqual(managed_mapper.actions_for_app([self.unconditional, self.app_specific]), [self.unconditional, self.app_specific])
