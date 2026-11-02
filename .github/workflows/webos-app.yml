@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -23,6 +24,13 @@ jobs:
       - run: nub ci
       - run: nub run check
       - run: nub run package
+      - name: Upload installable IPK
+        uses: actions/upload-artifact@v4
+        with:
+          name: magic-mapper-ipk-${{ github.run_number }}
+          path: dist/*.ipk
+          if-no-files-found: error
+          retention-days: 14
 
   # Releases published by Release Please build through release-please.yml instead:
   # events raised by GITHUB_TOKEN do not start another workflow run.
